@@ -1,31 +1,18 @@
 "use strict";
 const env = require("../config/env");
-const fileServiceStream = require("../services/file-service");
-const fileServiceBuffer = require("../services/file-buffer-service");
+const fileService = require("../services/file-service");
 
 class FileController {
-  _getService(req) {
-    const mode =
-      req.headers["x-service-mode"] || env.fileServiceMode || "stream";
-    return mode === "buffer" ? fileServiceBuffer : fileServiceStream;
-  }
-
   async upload(req, res) {
-    const modeName = (
-      req.headers["x-service-mode"] ||
-      env.fileServiceMode ||
-      "stream"
-    ).toUpperCase();
+    const mode = req.headers["x-service-mode"] || env.fileServiceMode || "stream";
+    const modeName = mode.toUpperCase();
 
-    // Catat memori RAM proses sebelum upload dimulai (dalam MB)
     const ramBefore = process.memoryUsage().rss / 1024 / 1024;
 
     try {
-      const activeService = this._getService(req);
       const originalName = req.headers["x-file-name"] || "file_tanpa_nama.bin";
-      const savedFile = await activeService.uploadFile(originalName, req);
+      const savedFile = await fileService.uploadFile(originalName, req, mode);
 
-      // Catat memori RAM proses setelah upload selesai (dalam MB)
       const ramAfter = process.memoryUsage().rss / 1024 / 1024;
       const ramDelta = ramAfter - ramBefore;
 
@@ -48,8 +35,7 @@ class FileController {
 
   async getAll(req, res) {
     try {
-      const activeService = this._getService(req);
-      const files = await activeService.getAllFiles();
+      const files = await fileService.getAllFiles();
       return res.json({ data: files });
     } catch (err) {
       return res.status(500).json({ error: err.message });
@@ -58,8 +44,7 @@ class FileController {
 
   async getById(req, res) {
     try {
-      const activeService = this._getService(req);
-      const file = await activeService.getFileById(req.params.id);
+      const file = await fileService.getFileById(req.params.id);
       return res.json({ data: file });
     } catch (err) {
       return res.status(404).json({ error: err.message });
@@ -68,12 +53,11 @@ class FileController {
 
   async update(req, res) {
     try {
-      const activeService = this._getService(req);
       const data = {};
       if (req.body.originalName) data.originalName = req.body.originalName;
       if (req.body.fileSize) data.fileSize = req.body.fileSize;
 
-      const updated = await activeService.updateFile(req.params.id, data);
+      const updated = await fileService.updateFile(req.params.id, data);
       return res.json({ message: "File berhasil diupdate", data: updated });
     } catch (err) {
       const status = err.message === "File tidak ditemukan" ? 404 : 500;
@@ -83,8 +67,7 @@ class FileController {
 
   async delete(req, res) {
     try {
-      const activeService = this._getService(req);
-      const result = await activeService.deleteFile(req.params.id);
+      const result = await fileService.deleteFile(req.params.id);
       return res.json(result);
     } catch (err) {
       return res.status(404).json({ error: err.message });
