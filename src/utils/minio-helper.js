@@ -5,9 +5,6 @@ const env = require('../config/env');
 
 const bucketMutex = new Mutex();
 
-/**
- * Memastikan bucket MinIO sudah terbuat secara thread-safe menggunakan Mutex.
- */
 async function ensureBucketExists() {
   const releaseBucketLock = await bucketMutex.acquire();
   try {
