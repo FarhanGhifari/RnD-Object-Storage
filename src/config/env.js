@@ -14,6 +14,4 @@ module.exports = {
   minioAccessKey: process.env.MINIO_ACCESS_KEY || '',
   minioSecretKey: process.env.MINIO_SECRET_KEY || '',
   minioBucketName: process.env.MINIO_BUCKET_NAME || 'rnd-bucket',
-  fileServiceMode: process.env.FILE_SERVICE_MODE || 'stream',
-  storageProvider: process.env.STORAGE_PROVIDER || 'minio',
 };

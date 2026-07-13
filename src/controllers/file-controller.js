@@ -1,10 +1,9 @@
 "use strict";
-const env = require("../config/env");
 const fileService = require("../services/file-service");
 
 class FileController {
   async upload(req, res) {
-    const mode = req.headers["x-service-mode"] || env.fileServiceMode || "stream";
+    const mode = req.headers["x-service-mode"] || "stream";
     const modeName = mode.toUpperCase();
 
     const ramBefore = process.memoryUsage().rss / 1024 / 1024;

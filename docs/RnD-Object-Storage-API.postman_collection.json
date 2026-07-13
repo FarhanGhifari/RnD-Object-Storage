@@ -1,0 +1,273 @@
+{
+	"info": {
+		"_postman_id": "rnd-object-storage-collection",
+		"name": "RnD Object Storage API",
+		"description": "Collection untuk API Object Storage menggunakan MinIO.\n\n## Cara Pakai\n1. Pastikan server sudah berjalan (`npm start`) di port 3000\n2. Pastikan MinIO dan PostgreSQL sudah aktif\n3. Untuk upload file, pilih tab Body > binary > Select File\n\n## Header Upload\n- `x-file-name`: Nama file yang diupload (wajib)\n- `x-service-mode`: Metode upload, pilih `stream` atau `buffer` (default: stream)\n- `Content-Type`: `application/octet-stream`\n\n## Perbedaan Mode\n- **stream**: Data mengalir langsung ke MinIO tanpa numpuk di RAM (hemat memori, cocok file besar)\n- **buffer**: Data dikumpulkan dulu di RAM baru dikirim ke MinIO sekaligus",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3000",
+			"type": "string"
+		},
+		{
+			"key": "fileId",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Upload File (Stream)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-file-name",
+						"value": "contoh-file.jpg",
+						"description": "Nama file yang diupload (wajib)"
+					},
+					{
+						"key": "x-service-mode",
+						"value": "stream",
+						"description": "Metode upload: stream (default) atau buffer"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/octet-stream",
+						"description": "Menandakan body adalah data biner mentah"
+					}
+				],
+				"body": {
+					"mode": "file",
+					"file": {
+						"src": ""
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/files/upload",
+					"host": ["{{baseUrl}}"],
+					"path": ["files", "upload"]
+				},
+				"description": "Upload file menggunakan metode **Stream**.\n\nData file mengalir langsung dari client ke MinIO tanpa dikumpulkan di memori (RAM). Cocok untuk file berukuran besar karena hemat RAM.\n\n### Cara Pakai:\n1. Pilih tab **Body** > **binary**\n2. Klik **Select File** dan pilih file yang ingin diupload\n3. Klik **Send**"
+			},
+			"response": [
+				{
+					"name": "201 - Upload Sukses",
+					"status": "Created",
+					"code": 201,
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"message\": \"File sukses diupload menggunakan metode STREAM!\",\n  \"data\": {\n    \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n    \"originalName\": \"contoh-file.jpg\",\n    \"storagePath\": \"1752382800000-uuid-contoh-file.jpg\",\n    \"fileSize\": 5242880,\n    \"createdAt\": \"2026-07-13T03:00:00.000Z\",\n    \"updatedAt\": \"2026-07-13T03:00:00.000Z\"\n  }\n}"
+				}
+			]
+		},
+		{
+			"name": "Upload File (Buffer)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-file-name",
+						"value": "contoh-file.jpg",
+						"description": "Nama file yang diupload (wajib)"
+					},
+					{
+						"key": "x-service-mode",
+						"value": "buffer",
+						"description": "Metode upload: stream (default) atau buffer"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/octet-stream",
+						"description": "Menandakan body adalah data biner mentah"
+					}
+				],
+				"body": {
+					"mode": "file",
+					"file": {
+						"src": ""
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/files/upload",
+					"host": ["{{baseUrl}}"],
+					"path": ["files", "upload"]
+				},
+				"description": "Upload file menggunakan metode **Buffer**.\n\nData file dikumpulkan seluruhnya di memori (RAM) terlebih dahulu, baru dikirim ke MinIO sekaligus. Lebih boros RAM dibanding stream.\n\n### Cara Pakai:\n1. Pilih tab **Body** > **binary**\n2. Klik **Select File** dan pilih file yang ingin diupload\n3. Klik **Send**"
+			},
+			"response": [
+				{
+					"name": "201 - Upload Sukses",
+					"status": "Created",
+					"code": 201,
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"message\": \"File sukses diupload menggunakan metode BUFFER!\",\n  \"data\": {\n    \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n    \"originalName\": \"contoh-file.jpg\",\n    \"storagePath\": \"1752382800000-uuid-contoh-file.jpg\",\n    \"fileSize\": 5242880,\n    \"createdAt\": \"2026-07-13T03:00:00.000Z\",\n    \"updatedAt\": \"2026-07-13T03:00:00.000Z\"\n  }\n}"
+				}
+			]
+		},
+		{
+			"name": "Get All Files",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/files",
+					"host": ["{{baseUrl}}"],
+					"path": ["files"]
+				},
+				"description": "Mengambil daftar semua file yang tersimpan di database."
+			},
+			"response": [
+				{
+					"name": "200 - Daftar File",
+					"status": "OK",
+					"code": 200,
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"data\": [\n    {\n      \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n      \"originalName\": \"foto.jpg\",\n      \"storagePath\": \"1752382800000-uuid-foto.jpg\",\n      \"fileSize\": 5242880,\n      \"createdAt\": \"2026-07-13T03:00:00.000Z\",\n      \"updatedAt\": \"2026-07-13T03:00:00.000Z\"\n    }\n  ]\n}"
+				}
+			]
+		},
+		{
+			"name": "Get File by ID",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/files/{{fileId}}",
+					"host": ["{{baseUrl}}"],
+					"path": ["files", "{{fileId}}"]
+				},
+				"description": "Mengambil detail satu file berdasarkan ID (UUID).\n\n### Cara Pakai:\nGanti `{{fileId}}` dengan UUID file yang ingin dicari, atau set variabel `fileId` di tab Variables."
+			},
+			"response": [
+				{
+					"name": "200 - File Ditemukan",
+					"status": "OK",
+					"code": 200,
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"data\": {\n    \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n    \"originalName\": \"foto.jpg\",\n    \"storagePath\": \"1752382800000-uuid-foto.jpg\",\n    \"fileSize\": 5242880,\n    \"createdAt\": \"2026-07-13T03:00:00.000Z\",\n    \"updatedAt\": \"2026-07-13T03:00:00.000Z\"\n  }\n}"
+				},
+				{
+					"name": "404 - File Tidak Ditemukan",
+					"status": "Not Found",
+					"code": 404,
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"error\": \"File tidak ditemukan\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Update File Metadata",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"originalName\": \"nama-baru.jpg\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/files/{{fileId}}",
+					"host": ["{{baseUrl}}"],
+					"path": ["files", "{{fileId}}"]
+				},
+				"description": "Mengupdate metadata file (nama file) berdasarkan ID.\n\n### Body (JSON):\n- `originalName` (string, opsional): Nama file baru\n- `fileSize` (number, opsional): Ukuran file baru"
+			},
+			"response": [
+				{
+					"name": "200 - Update Sukses",
+					"status": "OK",
+					"code": 200,
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"message\": \"File berhasil diupdate\",\n  \"data\": {\n    \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n    \"originalName\": \"nama-baru.jpg\",\n    \"storagePath\": \"1752382800000-uuid-foto.jpg\",\n    \"fileSize\": 5242880,\n    \"createdAt\": \"2026-07-13T03:00:00.000Z\",\n    \"updatedAt\": \"2026-07-13T03:15:00.000Z\"\n  }\n}"
+				},
+				{
+					"name": "404 - File Tidak Ditemukan",
+					"status": "Not Found",
+					"code": 404,
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"error\": \"File tidak ditemukan\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Delete File",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/files/{{fileId}}",
+					"host": ["{{baseUrl}}"],
+					"path": ["files", "{{fileId}}"]
+				},
+				"description": "Menghapus file dari MinIO dan database berdasarkan ID.\n\n⚠️ **Perhatian**: File akan dihapus permanen dari MinIO dan metadata-nya dihapus dari database."
+			},
+			"response": [
+				{
+					"name": "200 - Hapus Sukses",
+					"status": "OK",
+					"code": 200,
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"message\": \"File berhasil dihapus\"\n}"
+				},
+				{
+					"name": "404 - File Tidak Ditemukan",
+					"status": "Not Found",
+					"code": 404,
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"error\": \"File tidak ditemukan\"\n}"
+				}
+			]
+		}
+	]
+}
