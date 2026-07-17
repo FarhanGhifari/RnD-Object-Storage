@@ -32,17 +32,20 @@ Berikut adalah fungsi dari setiap berkas yang ada di dalam struktur proyek ini:
 ### 2. Folder Migrasi Database
 * **migrations/20260709000000-create-files.js**: Skrip migrasi database relasional yang berisi instruksi untuk membuat tabel skema penyimpanan berkas di PostgreSQL.
 
-### 3. Folder Konfigurasi Aplikasi (src/config)
+### 3. Folder Dokumentasi (docs/)
+* **docs/README.md**: Berkas panduan dan dokumentasi utama mengenai arsitektur, struktur proyek, dan cara menjalankan aplikasi ini.
+* **docs/RnD-Object-Storage-API.postman_collection.json**: Koleksi API Postman untuk menguji secara otomatis semua endpoint aplikasi (Upload, Get, Update, Delete).
+* **docs/RnD-Object-Storage-Local.postman_environment.json**: Konfigurasi variabel lingkungan (*environment variables*) lokal untuk digunakan bersama koleksi Postman.
+
+### 4. Folder Konfigurasi Aplikasi (src/config)
 * **src/config/env.js**: Memuat variabel dari berkas .env dan mengekspornya dalam bentuk objek JavaScript terstruktur.
 * **src/config/minio.js**: Menginisialisasi dan mengekspor instance client untuk berinteraksi dengan API Object Storage MinIO.
 * **src/config/sequelize-cli.js**: Menyediakan konfigurasi koneksi database untuk dibaca oleh perkakas Sequelize CLI saat menjalankan perintah migrasi.
 
-### 4. Folder Middleware (src/middlewares)
-* **src/middlewares/upload-middleware.js**: Mengkonfigurasi multer untuk menangani upload file dengan form-data (multipart/form-data). Menggunakan memoryStorage untuk menyimpan file di memory sebagai buffer.
-* **src/middlewares/validate-upload-mode.js**: Middleware untuk memvalidasi mode upload (stream/buffer) sebelum request masuk ke controller.
+### 5. Folder Middleware (src/middlewares)
 * **src/middlewares/error-handler.js**: Global error handler untuk menangani semua error dengan format response yang konsisten.
 
-### 5. Folder Helpers (src/helpers)
+### 6. Folder Helpers (src/helpers)
 * **src/helpers/error-helper.js**: Berisi custom error classes (NotFoundError, ValidationError, SystemError) dan semua error messages dalam satu tempat untuk konsistensi.
 * **src/helpers/file-helper.js**: Berisi fungsi helper untuk sanitasi nama file agar aman disimpan.
 * **src/helpers/logger.js**: Centralized logger untuk logging memory comparison dan aplikasi logs.
@@ -50,20 +53,20 @@ Berikut adalah fungsi dari setiap berkas yang ada di dalam struktur proyek ini:
 * **src/helpers/upload-helper.js**: Berisi fungsi helper untuk upload file ke MinIO menggunakan metode Stream (mengkonversi buffer ke readable stream) atau Buffer (langsung mengirim buffer).
 * **src/helpers/validation.js**: Berisi utilitas untuk memvalidasi apakah string ID yang diterima dari parameter request memiliki format UUIDv4 yang benar.
 
-### 6. Folder Database (src/database)
+### 7. Folder Database (src/database)
 * **src/database/connection.js**: Membuat instance koneksi ke database relasional PostgreSQL menggunakan Sequelize ORM.
 * **src/database/models/index.js**: Skrip pemuat otomatis (autoloader) yang mengumpulkan seluruh definisi model database di dalam proyek.
 * **src/database/models/file.js**: Mendefinisikan skema model Sequelize untuk tabel berkas, termasuk tipe data UUID, nama asli berkas, letak path penyimpanan, dan ukuran berkas.
 * **src/database/repositories/file-repository.js**: Menyediakan database query helper (create, find, delete, update) agar query SQL terpisah dari logika bisnis.
 
-### 7. Folder Router & Controller (src/routes & src/controllers)
+### 8. Folder Router & Controller (src/routes & src/controllers)
 * **src/routes/file-routes.js**: Mendefinisikan rute/endpoint HTTP (URL endpoint) untuk pengoperasian berkas dan menghubungkannya dengan controller yang sesuai. Menggunakan multer middleware untuk menangani upload file.
 * **src/controllers/file-controller.js**: Menangani request dan response HTTP, mengekstrak data dari form-data (req.file), serta mencatat statistik perbandingan RAM (sebelum, sesudah, dan selisih penggunaan memori).
 
-### 8. Folder Layanan Bisnis (src/services)
+### 9. Folder Layanan Bisnis (src/services)
 * **src/services/file-service.js**: Mengandung logika bisnis utama untuk pengunggahan file dengan menerima buffer dari multer dan mengirimkannya ke MinIO menggunakan metode Stream atau Buffer.
 
-### 9. Folder Entry Point (src/)
+### 10. Folder Entry Point (src/)
 * **src/server.js**: Berkas entry point utama aplikasi yang bertugas memuat middleware, inisialisasi awal database, serta menjalankan server HTTP pada port yang ditentukan.
 * **src/app.js**: Mengatur konfigurasi Express, mendaftarkan middleware penanganan body JSON, rute global, health check endpoint, serta penanganan error rute tidak ditemukan (404).
 
