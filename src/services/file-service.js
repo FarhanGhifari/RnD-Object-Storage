@@ -1,31 +1,38 @@
 'use strict';
+
 const { randomUUID } = require('crypto');
-const { isUUID } = require('../utils/validation');
-const fileRepository = require('../repositories/file-repository');
+const { isUUID } = require('../helpers/validation');
+const fileRepository = require('../database/repositories/file-repository');
 const minioClient = require('../config/minio');
 const env = require('../config/env');
-const { sanitizeFileName } = require('../utils/file-helper');
-const { ensureBucketExists } = require('../utils/minio-helper');
-const { uploadWithStream, uploadWithBuffer } = require('../utils/upload-helper');
+const { sanitizeFileName } = require('../helpers/file-helper');
+const { ensureBucketExists } = require('../helpers/minio-helper');
+const { NotFoundError, SystemError, ERROR_MESSAGES } = require('../helpers/error-helper');
 
 class FileService {
-  async uploadFile(originalName, readableStream, mode = 'stream') {
+  async uploadFile(fileStream, originalName, fileSize, mode) {
     const safeOriginalName = sanitizeFileName(originalName);
     const uniqueName = `${Date.now()}-${randomUUID()}-${safeOriginalName}`;
 
     let uploadSucceeded = false;
-    let totalSize = 0;
     const storagePath = uniqueName;
 
     try {
       await ensureBucketExists();
+
       if (mode === 'buffer') {
-        totalSize = await uploadWithBuffer(uniqueName, readableStream);
+        // Read the entire fileStream into a single buffer
+        const chunks = [];
+        for await (const chunk of fileStream) {
+          chunks.push(chunk);
+        }
+        const fileBuffer = Buffer.concat(chunks);
+
+        // Upload using buffer
+        await minioClient.putObject(env.minioBucketName, uniqueName, fileBuffer);
       } else {
-        const fileSize = readableStream.headers && readableStream.headers['content-length']
-          ? parseInt(readableStream.headers['content-length'], 10)
-          : undefined;
-        totalSize = await uploadWithStream(uniqueName, readableStream, fileSize);
+        // Stream directly to MinIO
+        await minioClient.putObject(env.minioBucketName, uniqueName, fileStream, fileSize);
       }
 
       uploadSucceeded = true;
@@ -33,13 +40,13 @@ class FileService {
       return await fileRepository.create({
         originalName: safeOriginalName,
         storagePath: storagePath,
-        fileSize: totalSize
+        fileSize: fileSize,
       });
     } catch (err) {
       if (uploadSucceeded) {
         await minioClient.removeObject(env.minioBucketName, uniqueName).catch(() => {});
       }
-      throw new Error('Kesalahan sistem: ' + err.message);
+      throw new SystemError(`${ERROR_MESSAGES.SYSTEM_ERROR}: ${err.message}`);
     }
   }
 
@@ -51,7 +58,7 @@ class FileService {
     this._validateId(id);
     const file = await fileRepository.findById(id);
     if (!file) {
-      throw new Error('File tidak ditemukan');
+      throw new NotFoundError(ERROR_MESSAGES.FILE_NOT_FOUND);
     }
     return file;
   }
@@ -60,7 +67,7 @@ class FileService {
     this._validateId(id);
     const updated = await fileRepository.update(id, data);
     if (!updated) {
-      throw new Error('File tidak ditemukan');
+      throw new NotFoundError(ERROR_MESSAGES.FILE_NOT_FOUND);
     }
     return updated;
   }
@@ -69,18 +76,18 @@ class FileService {
     this._validateId(id);
     const file = await fileRepository.findById(id);
     if (!file) {
-      throw new Error('File tidak ditemukan');
+      throw new NotFoundError(ERROR_MESSAGES.FILE_NOT_FOUND);
     }
 
     await minioClient.removeObject(env.minioBucketName, file.storagePath);
-
     await fileRepository.delete(id);
-    return { message: 'File berhasil dihapus' };
+    
+    return { message: ERROR_MESSAGES.FILE_DELETE_SUCCESS };
   }
 
   _validateId(id) {
     if (!isUUID(id)) {
-      throw new Error('File tidak ditemukan');
+      throw new NotFoundError(ERROR_MESSAGES.FILE_NOT_FOUND);
     }
   }
 }

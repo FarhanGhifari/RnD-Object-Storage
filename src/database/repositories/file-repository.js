@@ -1,4 +1,5 @@
 'use strict';
+
 const { File } = require('../models');
 
 class FileRepository {
@@ -7,7 +8,9 @@ class FileRepository {
   }
 
   async findAll() {
-    return File.findAll({ order: [['created_at', 'DESC']] });
+    return File.findAll({ 
+      order: [['createdAt', 'DESC']] 
+    });
   }
 
   async findById(id) {

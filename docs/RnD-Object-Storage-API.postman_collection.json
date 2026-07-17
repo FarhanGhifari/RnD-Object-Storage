@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "rnd-object-storage-collection",
 		"name": "RnD Object Storage API",
-		"description": "Collection untuk API Object Storage menggunakan MinIO.\n\n## Cara Pakai\n1. Pastikan server sudah berjalan (`npm start`) di port 3000\n2. Pastikan MinIO dan PostgreSQL sudah aktif\n3. Untuk upload file, pilih tab Body > binary > Select File\n\n## Header Upload\n- `x-file-name`: Nama file yang diupload (wajib)\n- `x-service-mode`: Metode upload, pilih `stream` atau `buffer` (default: stream)\n- `Content-Type`: `application/octet-stream`\n\n## Perbedaan Mode\n- **stream**: Data mengalir langsung ke MinIO tanpa numpuk di RAM (hemat memori, cocok file besar)\n- **buffer**: Data dikumpulkan dulu di RAM baru dikirim ke MinIO sekaligus",
+		"description": "Collection untuk API Object Storage menggunakan MinIO.\n\n## Cara Pakai\n1. Pastikan server sudah berjalan (`npm start`) di port 3000\n2. Pastikan MinIO dan PostgreSQL sudah aktif\n3. Untuk upload file, pilih tab Body > form-data > pilih field 'file' dengan type File\n\n## Header Upload\n- `x-service-mode`: Metode upload, pilih `stream` atau `buffer` (default: stream)\n\n## Perbedaan Mode\n- **stream**: Data dikonversi ke stream dan mengalir ke MinIO secara bertahap (lebih efisien dalam transfer ke MinIO)\n- **buffer**: Data dikirim sekaligus sebagai buffer ke MinIO (lebih boros memori)",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"variable": [
@@ -19,24 +19,19 @@
 	],
 	"item": [
 		{
-			"name": "Upload File (Stream)",
+			"name": "Upload File",
 			"request": {
 				"method": "POST",
 				"header": [
 					{
 						"key": "x-file-name",
-						"value": "contoh-file.jpg",
-						"description": "Nama file yang diupload (wajib)"
+						"value": "uji-coba.pdf",
+						"description": "Nama asli file"
 					},
 					{
 						"key": "x-service-mode",
 						"value": "stream",
 						"description": "Metode upload: stream (default) atau buffer"
-					},
-					{
-						"key": "Content-Type",
-						"value": "application/octet-stream",
-						"description": "Menandakan body adalah data biner mentah"
 					}
 				],
 				"body": {
@@ -48,73 +43,14 @@
 				"url": {
 					"raw": "{{baseUrl}}/files/upload",
 					"host": ["{{baseUrl}}"],
-					"path": ["files", "upload"]
+					"path": [
+						"files",
+						"upload"
+					]
 				},
-				"description": "Upload file menggunakan metode **Stream**.\n\nData file mengalir langsung dari client ke MinIO tanpa dikumpulkan di memori (RAM). Cocok untuk file berukuran besar karena hemat RAM.\n\n### Cara Pakai:\n1. Pilih tab **Body** > **binary**\n2. Klik **Select File** dan pilih file yang ingin diupload\n3. Klik **Send**"
+				"description": "Upload file menggunakan metode **Binary Stream** atau **Binary Buffer**.\n\n### Cara Pakai:\n1. Di tab **Headers**, atur `x-service-mode` ke `stream` atau `buffer`.\n2. Set `x-file-name` dengan nama file asli.\n3. Di tab **Body**, pilih **binary** lalu pilih file.\n4. Klik **Send**."
 			},
-			"response": [
-				{
-					"name": "201 - Upload Sukses",
-					"status": "Created",
-					"code": 201,
-					"header": [
-						{
-							"key": "Content-Type",
-							"value": "application/json"
-						}
-					],
-					"body": "{\n  \"message\": \"File sukses diupload menggunakan metode STREAM!\",\n  \"data\": {\n    \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n    \"originalName\": \"contoh-file.jpg\",\n    \"storagePath\": \"1752382800000-uuid-contoh-file.jpg\",\n    \"fileSize\": 5242880,\n    \"createdAt\": \"2026-07-13T03:00:00.000Z\",\n    \"updatedAt\": \"2026-07-13T03:00:00.000Z\"\n  }\n}"
-				}
-			]
-		},
-		{
-			"name": "Upload File (Buffer)",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "x-file-name",
-						"value": "contoh-file.jpg",
-						"description": "Nama file yang diupload (wajib)"
-					},
-					{
-						"key": "x-service-mode",
-						"value": "buffer",
-						"description": "Metode upload: stream (default) atau buffer"
-					},
-					{
-						"key": "Content-Type",
-						"value": "application/octet-stream",
-						"description": "Menandakan body adalah data biner mentah"
-					}
-				],
-				"body": {
-					"mode": "file",
-					"file": {
-						"src": ""
-					}
-				},
-				"url": {
-					"raw": "{{baseUrl}}/files/upload",
-					"host": ["{{baseUrl}}"],
-					"path": ["files", "upload"]
-				},
-				"description": "Upload file menggunakan metode **Buffer**.\n\nData file dikumpulkan seluruhnya di memori (RAM) terlebih dahulu, baru dikirim ke MinIO sekaligus. Lebih boros RAM dibanding stream.\n\n### Cara Pakai:\n1. Pilih tab **Body** > **binary**\n2. Klik **Select File** dan pilih file yang ingin diupload\n3. Klik **Send**"
-			},
-			"response": [
-				{
-					"name": "201 - Upload Sukses",
-					"status": "Created",
-					"code": 201,
-					"header": [
-						{
-							"key": "Content-Type",
-							"value": "application/json"
-						}
-					],
-					"body": "{\n  \"message\": \"File sukses diupload menggunakan metode BUFFER!\",\n  \"data\": {\n    \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n    \"originalName\": \"contoh-file.jpg\",\n    \"storagePath\": \"1752382800000-uuid-contoh-file.jpg\",\n    \"fileSize\": 5242880,\n    \"createdAt\": \"2026-07-13T03:00:00.000Z\",\n    \"updatedAt\": \"2026-07-13T03:00:00.000Z\"\n  }\n}"
-				}
-			]
+			"response": []
 		},
 		{
 			"name": "Get All Files",

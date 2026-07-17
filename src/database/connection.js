@@ -1,6 +1,6 @@
 'use strict';
 const { Sequelize } = require('sequelize');
-const env = require('./env');
+const env = require('../config/env');
 
 const sequelize = new Sequelize(env.dbName, env.dbUser, env.dbPassword, {
   host: env.dbHost,

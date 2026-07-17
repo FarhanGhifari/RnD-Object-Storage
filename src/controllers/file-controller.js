@@ -1,75 +1,81 @@
-"use strict";
-const fileService = require("../services/file-service");
+'use strict';
+
+const fileService = require('../services/file-service');
+const logger = require('../helpers/logger');
+const { ValidationError, ERROR_MESSAGES } = require('../helpers/error-helper');
 
 class FileController {
-  async upload(req, res) {
-    const mode = req.headers["x-service-mode"] || "stream";
-    const modeName = mode.toUpperCase();
-
+  async upload(req, res, next) {
+    const rawMode = req.headers['x-service-mode'] || 'stream';
+    const mode = rawMode.toLowerCase() === 'buffer' ? 'buffer' : 'stream';
     const ramBefore = process.memoryUsage().rss / 1024 / 1024;
 
     try {
-      const originalName = req.headers["x-file-name"] || "file_tanpa_nama.bin";
-      const savedFile = await fileService.uploadFile(originalName, req, mode);
+      const originalName = req.query.name || req.headers['x-file-name'] || `file-${Date.now()}`;
+      const fileSize = parseInt(req.headers['content-length'], 10);
+
+      if (isNaN(fileSize)) {
+        throw new ValidationError('Content-Length header is required');
+      }
+
+      const savedFile = await fileService.uploadFile(req, originalName, fileSize, mode);
 
       const ramAfter = process.memoryUsage().rss / 1024 / 1024;
       const ramDelta = ramAfter - ramBefore;
 
-      console.log(`\n[LOG KOMPARASI MEMORI UPLOAD]`);
-      console.log(`==========================================`);
-      console.log(`Metode Terpilih : ${modeName}`);
-      console.log(`RAM Sebelum     : ${ramBefore.toFixed(2)} MB`);
-      console.log(`RAM Sesudah     : ${ramAfter.toFixed(2)} MB`);
-      console.log(`Lonjakan RAM    : ${ramDelta.toFixed(2)} MB`);
-      console.log(`==========================================\n`);
+      logger.logMemoryComparison(mode.toUpperCase(), ramBefore, ramAfter, ramDelta);
 
       return res.status(201).json({
-        message: `File sukses diupload menggunakan metode ${modeName}!`,
+        message: `${ERROR_MESSAGES.FILE_UPLOAD_SUCCESS} ${mode.toUpperCase()}!`,
         data: savedFile,
       });
     } catch (err) {
-      return res.status(500).json({ error: err.message });
+      next(err);
     }
   }
 
-  async getAll(req, res) {
+  async getAll(req, res, next) {
     try {
       const files = await fileService.getAllFiles();
       return res.json({ data: files });
     } catch (err) {
-      return res.status(500).json({ error: err.message });
+      next(err);
     }
   }
 
-  async getById(req, res) {
+  async getById(req, res, next) {
     try {
       const file = await fileService.getFileById(req.params.id);
       return res.json({ data: file });
     } catch (err) {
-      return res.status(404).json({ error: err.message });
+      next(err);
     }
   }
 
-  async update(req, res) {
+  async update(req, res, next) {
     try {
+      const { originalName, fileSize } = req.body;
       const data = {};
-      if (req.body.originalName) data.originalName = req.body.originalName;
-      if (req.body.fileSize) data.fileSize = req.body.fileSize;
+      
+      if (originalName) data.originalName = originalName;
+      if (fileSize) data.fileSize = fileSize;
 
       const updated = await fileService.updateFile(req.params.id, data);
-      return res.json({ message: "File berhasil diupdate", data: updated });
+      return res.json({ 
+        message: ERROR_MESSAGES.FILE_UPDATE_SUCCESS, 
+        data: updated 
+      });
     } catch (err) {
-      const status = err.message === "File tidak ditemukan" ? 404 : 500;
-      return res.status(status).json({ error: err.message });
+      next(err);
     }
   }
 
-  async delete(req, res) {
+  async delete(req, res, next) {
     try {
       const result = await fileService.deleteFile(req.params.id);
       return res.json(result);
     } catch (err) {
-      return res.status(404).json({ error: err.message });
+      next(err);
     }
   }
 }
