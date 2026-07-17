@@ -57,7 +57,7 @@ Berikut adalah fungsi dari setiap berkas yang ada di dalam struktur proyek ini:
 * **src/database/connection.js**: Membuat instance koneksi ke database relasional PostgreSQL menggunakan Sequelize ORM.
 * **src/database/models/index.js**: Skrip pemuat otomatis (autoloader) yang mengumpulkan seluruh definisi model database di dalam proyek.
 * **src/database/models/file.js**: Mendefinisikan skema model Sequelize untuk tabel berkas, termasuk tipe data UUID, nama asli berkas, letak path penyimpanan, dan ukuran berkas.
-* **src/database/repositories/file-repository.js**: Menyediakan database query helper (create, find, delete, update) agar query SQL terpisah dari logika bisnis.
+* **src/database/repositories/file-repository.js**: Menyediakan database query helper (create, find, delete) agar query SQL terpisah dari logika bisnis.
 
 ### 8. Folder Router & Controller (src/routes & src/controllers)
 * **src/routes/file-routes.js**: Mendefinisikan rute/endpoint HTTP (URL endpoint) untuk pengoperasian berkas dan menghubungkannya dengan controller yang sesuai. Menggunakan multer middleware untuk menangani upload file.

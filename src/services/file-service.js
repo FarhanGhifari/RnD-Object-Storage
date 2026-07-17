@@ -63,15 +63,6 @@ class FileService {
     return file;
   }
 
-  async updateFile(id, data) {
-    this._validateId(id);
-    const updated = await fileRepository.update(id, data);
-    if (!updated) {
-      throw new NotFoundError(ERROR_MESSAGES.FILE_NOT_FOUND);
-    }
-    return updated;
-  }
-
   async deleteFile(id) {
     this._validateId(id);
     const file = await fileRepository.findById(id);

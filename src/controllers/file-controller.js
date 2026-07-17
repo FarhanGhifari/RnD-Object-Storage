@@ -52,24 +52,6 @@ class FileController {
     }
   }
 
-  async update(req, res, next) {
-    try {
-      const { originalName, fileSize } = req.body;
-      const data = {};
-      
-      if (originalName) data.originalName = originalName;
-      if (fileSize) data.fileSize = fileSize;
-
-      const updated = await fileService.updateFile(req.params.id, data);
-      return res.json({ 
-        message: ERROR_MESSAGES.FILE_UPDATE_SUCCESS, 
-        data: updated 
-      });
-    } catch (err) {
-      next(err);
-    }
-  }
-
   async delete(req, res, next) {
     try {
       const result = await fileService.deleteFile(req.params.id);

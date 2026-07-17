@@ -17,12 +17,6 @@ class FileRepository {
     return File.findByPk(id);
   }
 
-  async update(id, data) {
-    const [affected] = await File.update(data, { where: { id } });
-    if (affected === 0) return null;
-    return this.findById(id);
-  }
-
   async delete(id) {
     const deleted = await File.destroy({ where: { id } });
     return deleted > 0;

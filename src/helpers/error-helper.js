@@ -30,7 +30,6 @@ const ERROR_MESSAGES = {
   INVALID_UPLOAD_MODE: 'Mode upload tidak valid. Gunakan \'stream\' atau \'buffer\'.',
   SYSTEM_ERROR: 'Kesalahan sistem',
   FILE_UPLOAD_SUCCESS: 'File sukses diupload menggunakan metode',
-  FILE_UPDATE_SUCCESS: 'File berhasil diupdate',
   FILE_DELETE_SUCCESS: 'File berhasil dihapus',
   ENDPOINT_NOT_FOUND: 'Endpoint tidak ditemukan',
 };
