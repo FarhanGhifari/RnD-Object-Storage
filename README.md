@@ -30,7 +30,7 @@ Berikut adalah fungsi dari setiap berkas yang ada di dalam struktur proyek ini:
 * **.env**: Menyimpan variabel lingkungan sensitif yang digunakan untuk konfigurasi port aplikasi, koneksi database PostgreSQL, dan kredensial Object Storage MinIO.
 
 ### 2. Folder Migrasi Database
-* **migrations/20260709000000-create-local-files.js**: Skrip migrasi database relasional yang berisi instruksi untuk membuat tabel skema penyimpanan berkas di PostgreSQL.
+* **migrations/20260709000000-create-files.js**: Skrip migrasi database relasional yang berisi instruksi untuk membuat tabel skema penyimpanan berkas di PostgreSQL.
 
 ### 3. Folder Konfigurasi Aplikasi (src/config)
 * **src/config/env.js**: Memuat variabel dari berkas .env dan mengekspornya dalam bentuk objek JavaScript terstruktur.
@@ -75,36 +75,37 @@ Berikut adalah fungsi dari setiap berkas yang ada di dalam struktur proyek ini:
 - Node.js v16+ sudah terinstall
 - Docker Desktop sudah terinstall dan running
 
-### Setup dengan Docker (Recommended)
+### Cara Menjalankan Aplikasi
 
-1. **Clone repository dan install dependencies:**
+Aplikasi ini menggunakan kombinasi **Docker** untuk menjalankan Object Storage (MinIO) dan **PostgreSQL Lokal** (Windows/Linux native) untuk database relasional.
+
+1. **Install dependencies:**
    ```bash
    npm install
    ```
 
 2. **Setup environment variables:**
+   Salin berkas `.env.example` ke `.env`:
    ```bash
-   # Copy .env.example ke .env (sudah ada default values untuk Docker)
    copy .env.example .env
    ```
+   Buka berkas `.env` dan sesuaikan kredensial database PostgreSQL lokal Anda (seperti `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, dan `DB_NAME`).
 
-3. **Start Docker containers (PostgreSQL + MinIO):**
+3. **Jalankan Object Storage (MinIO) menggunakan Docker:**
+   Pastikan Docker Desktop Anda sudah menyala, lalu jalankan perintah:
    ```bash
-   # Windows
-   docker-start.bat
-   
-   # Atau manual
-   docker-compose up -d
+   docker compose up -d
    ```
 
-4. **Tunggu containers ready (10-15 detik), lalu jalankan migrasi database:**
+4. **Jalankan migrasi database:**
+   Pastikan PostgreSQL lokal Anda sudah aktif, kemudian buat skema tabel dengan menjalankan:
    ```bash
    npx sequelize-cli db:migrate
    ```
 
-5. **Jalankan aplikasi:**
+5. **Jalankan aplikasi (Mode Pengembangan):**
    ```bash
-   npm start
+   npm run dev
    ```
 
 6. **Test health check endpoint:**
@@ -112,27 +113,12 @@ Berikut adalah fungsi dari setiap berkas yang ada di dalam struktur proyek ini:
    curl http://localhost:3000/health
    ```
 
-### Setup Manual (Tanpa Docker)
-
-1. Install PostgreSQL dan MinIO secara manual
-2. Update `.env` dengan connection details Anda
-3. Jalankan migrasi database:
-   ```bash
-   npx sequelize-cli db:migrate
-   ```
-4. Jalankan aplikasi:
-   ```bash
-   npm start
-   ```
-
 ### Access URLs
 
 - **API**: http://localhost:3000
 - **Health Check**: http://localhost:3000/health
-- **MinIO Console**: http://localhost:9001 (minioadmin / minioadmin123)
-- **PostgreSQL**: localhost:5432 (postgres / postgres123)
-
-Untuk dokumentasi Docker lengkap, lihat [DOCKER_SETUP.md](./DOCKER_SETUP.md)
+- **MinIO Console**: http://localhost:9001 (Kredensial default: `minioadmin` / `minioadmin123`)
+- **PostgreSQL (Lokal)**: localhost:5432 (Sesuai konfigurasi `.env` Anda)
 
 ---
 
